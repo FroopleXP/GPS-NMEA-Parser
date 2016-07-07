@@ -30,6 +30,14 @@ int gps_fix_index;
 // Declaring start point of command
 int start_index;
 
+// Counter for SD Card
+int amount_of_files = 0;
+String new_filename = "gps_data_";
+String file_extension = ".txt";
+String filename;
+char* file_char;
+File root;
+
 // Characters for NMEA
 char nmea_code[] = {
   'G', 'G', 'A'
@@ -53,13 +61,30 @@ void setup() {
     return;
   }
 
-  // Checking if there is previous GPS data and deleting it
-  if (SD.exists("gps_data.txt")) {
-    bool del_old_data = SD.remove("gps_data.txt");
-    if (del_old_data == true) {
-      Serial.println("Removed old data...");
+  // Counting the amount of files
+  root = SD.open("/");
+  bool count_finished = false;
+
+  // Looping through and getting the amount of files on SD card
+  while (!count_finished) {
+    File entry = root.openNextFile();
+    if (!entry) {
+      count_finished = true;
+    } else if (!entry.isDirectory()) {
+      amount_of_files++;
     }
   }
+
+  Serial.println(amount_of_files);
+  
+  // Creating the file name
+  new_filename += String(amount_of_files);
+  filename += new_filename;
+  filename += file_extension;
+  
+  filename.toCharArray(file_char, filename.length());
+  
+  Serial.println(file_char);
   
 }
 
@@ -103,6 +128,8 @@ void loop() {
           // Checking the Satellite fix quality
           if (gps_fix == 1) {
 
+            Serial.println(new_filename);
+             
             // Starting the SD for Writing GPS data to
             File gps_data = SD.open("gps_data.txt", FILE_WRITE);
             
