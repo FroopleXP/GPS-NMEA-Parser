@@ -71,6 +71,8 @@ void loop() {
     // Getting the GPS data stream
     gps_stream_data = Serial.readStringUntil('\n');
 
+    Serial.println(gps_stream_data);
+
     // Check that it is a command
     if (gps_stream_data.charAt(0) == '$') {
       
@@ -99,7 +101,7 @@ void loop() {
           gps_fix = gps_stream_data.substring(gps_fix_index + 1, gps_fix_index + 2).toInt();
   
           // Checking the Satellite fix quality
-          if (gps_fix == 0) {
+          if (gps_fix == 1) {
 
             // Starting the SD for Writing GPS data to
             File gps_data = SD.open("gps_data.txt", FILE_WRITE);
@@ -110,8 +112,10 @@ void loop() {
             float lat = gps_stream_data.substring(lat_index + 1, lat_sign_index).toFloat();
             float lat_deg = float(int(lat / 100));
             float lat_deg_dec = (lat - (lat_deg * 100)) / 60;
-            latitude = lat + lat_deg_dec;
+            latitude = lat_deg + lat_deg_dec;
 
+            Serial.println(latitude, 4);
+            
             // Checking the sign
             if (lat_sign == "S") {
               latitude = latitude * (-1);
@@ -120,11 +124,13 @@ void loop() {
             // Getting the Longitude and sign 
             String _long_sign = gps_stream_data.substring(long_sign_index + 1, gps_fix_index); // Getting the Sign
             
-            float _long = gps_stream_data.substring(long_index + 1, gps_fix_index).toFloat();
+            float _long = gps_stream_data.substring(long_index + 1, long_sign_index).toFloat();
             float _long_deg = float(int(_long / 100));
             float _long_deg_dec = (_long - (_long_deg * 100)) / 60;
-            longitude = _long + _long_deg_dec;
+            longitude = _long_deg + _long_deg_dec;
 
+            Serial.println(longitude, 4);
+            
             // Checking the sign
             if (_long_sign == "W") {
               longitude = longitude * (-1);
@@ -136,7 +142,7 @@ void loop() {
               gps_data.print(",");
               gps_data.print(latitude, 4);
               gps_data.print(",");
-              gps_data.print("500");
+              gps_data.print("0"); // Mock Distance above see level
               gps_data.print(" ");
             }
 
